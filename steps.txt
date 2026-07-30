@@ -1,0 +1,79 @@
+Phase 0: Define the story before touching data (Day 1)
+
+Recruiters remember narratives, not code. Lock this in first:
+
+Problem statement: "Hospitals face CMS financial penalties for excess 30-day readmissions and struggle to anticipate capacity strain. This project identifies at-risk facilities and predicts capacity pressure to help ops/finance teams intervene early."
+Target user: Hospital operations manager or healthcare finance analyst
+Success metric: e.g., "flag facilities in the top 10% readmission risk with X% precision" or "estimate $ penalty exposure avoided"
+
+Write this in one paragraph now — it becomes your README intro and your resume bullet.
+
+Phase 1: Data acquisition (Days 2-5)
+
+Sources:
+
+CMS Hospital General Information + Readmissions Reduction Program API (data.cms.gov) — facility-level readmission rates, penalties, star ratings
+CMS Hospital Compare timely-care and outcome measures
+Optional: HHS/CDC hospital capacity data (historical COVID-era bed utilization) for a "capacity strain" angle
+
+What to build:
+
+A Python script (fetch_data.py) that pulls from CMS's Socrata API (data.cms.gov uses Socrata — use sodapy or plain requests)
+Handle pagination, rate limits, retries — this alone is a skill worth showing
+Save raw pulls to a /raw folder as JSON/CSV, timestamped
+
+Output: Working ingestion pipeline + raw dataset saved locally or to a cloud bucket (S3/GCS free tier — bonus points if you show this).
+
+Phase 2: Data modeling in SQL (Days 6-10)
+Load raw data into Postgres (or SQLite if you want zero setup, but Postgres looks more "real")
+Design a simple star schema: fact_readmissions, dim_hospital, dim_region, dim_time
+Write SQL to:
+Clean/dedupe facility records
+Aggregate readmission rates by state, hospital type, ownership
+Compute penalty exposure (CMS publishes penalty % — multiply by estimated Medicare payments if available, or use a proxy)
+Document your schema with an ER diagram (draw.io or dbdiagram.io — takes 10 minutes, looks very professional)
+
+Output: A clean, queryable database + 5-10 well-written SQL queries answering real questions ("Which states have the highest penalty exposure?" "Does hospital ownership type correlate with readmission rates?")
+
+Phase 3: Python analysis & modeling (Days 11-18)
+Exploratory analysis: distributions, correlations, regional patterns (pandas, seaborn/matplotlib)
+Build a model to predict readmission risk tier (high/medium/low) per facility using available features (ownership, region, hospital type, prior-year rates, staffing ratios if available)
+Keep it interpretable: logistic regression or a simple gradient-boosted tree (XGBoost/LightGBM) with SHAP values for explainability — recruiters love seeing "I explained the model" not just "I ran a model"
+Validate with a proper train/test split and report metrics honestly (precision/recall matter more than accuracy here, since flagging at-risk hospitals is the goal)
+
+Output: A Jupyter notebook that reads like a story — problem, EDA, model, evaluation, business takeaway. This notebook is often the single artifact recruiters actually open.
+
+Phase 4: Dashboard / visualization (Days 19-24)
+
+Pick one:
+
+Streamlit (fastest, Python-native, easy to deploy free on Streamlit Community Cloud) — best if you want to show full-stack Python
+Tableau Public (free, recruiters recognize it, great if targeting BI-heavy roles)
+Power BI if targeting corporate/enterprise analyst roles
+
+Build:
+
+A map or table of hospitals color-coded by risk tier
+Filters by state/hospital type
+A "what-if" panel: e.g., "if readmissions drop 2%, estimated penalty savings = $X"
+
+Output: A live, deployed, clickable link. This is the single highest-leverage thing for recruiters — something they can open in 10 seconds without cloning a repo.
+
+Phase 5: Package it to impress (Days 25-28)
+
+This is the step most people skip, and it's the one that actually gets you noticed.
+
+GitHub repo — clean structure (/data, /sql, /notebooks, /dashboard, /docs), a genuinely good README with the problem statement, architecture diagram, and a screenshot/GIF of the dashboard
+One-page write-up (README or separate doc) framed as a business memo: Problem → Approach → Findings → Recommendation → Impact estimate. Write it like you're presenting to a hospital COO, not a professor.
+Deployed dashboard link — pin it at the top of the README
+Resume bullet, something like:
+
+Built end-to-end healthcare analytics pipeline (CMS API → PostgreSQL → Python/XGBoost → Streamlit) to flag high-readmission-risk hospitals, identifying $X in potential CMS penalty exposure across analyzed facilities
+
+LinkedIn post (optional but high-value) — a 3-4 sentence summary + dashboard screenshot. Recruiters do search LinkedIn for exactly this kind of visible work.
+What separates "impressive" from "generic" here
+Real API ingestion (not a downloaded CSV) — shows engineering, not just analysis
+SQL schema design — shows you think about data structure, not just pd.read_csv
+Explainable model, not a black box — shows judgment
+A business number at the end (dollars, %, risk tier) — shows you can translate analytics into decisions
+A deployed, clickable artifact — shows you finish things
